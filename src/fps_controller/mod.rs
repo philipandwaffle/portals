@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::vec3, prelude::*};
 use bevy_rapier3d::prelude::*;
 
 use self::{
@@ -52,13 +52,18 @@ fn spawn_player(
     commands
         .spawn(Name::new("Player"))
         .insert(Player::default())
-        .insert(LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Z)
+        .insert(
+            LockedAxes::ROTATION_LOCKED_X
+                | LockedAxes::ROTATION_LOCKED_Z
+                | LockedAxes::ROTATION_LOCKED_Y,
+        )
         .insert(Collider::capsule_y(0.5, 0.25))
         .insert(KinematicCharacterController {
             offset: CharacterLength::Relative(0.01),
             ..default()
         })
         .insert(RigidBody::Dynamic)
+        .insert(GravityScale::default())
         .insert(Velocity::default())
         .insert(Damping {
             linear_damping: 1.0,
@@ -86,7 +91,13 @@ fn spawn_player(
         .with_children(|parent| {
             parent
                 .spawn(Name::new("FPSCamera"))
-                .insert(Camera3dBundle::default())
+                .insert(Camera3dBundle {
+                    transform: Transform {
+                        translation: vec3(0.0, 0.5, 0.0),
+                        ..default()
+                    },
+                    ..default()
+                })
                 .insert(FPSCam::default());
         });
 }

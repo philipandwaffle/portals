@@ -1,70 +1,103 @@
-use bevy::{math::vec3, prelude::*, render::camera::RenderTarget, transform::commands};
+use bevy::{
+    math::{vec2, vec3},
+    prelude::*,
+    render::{
+        camera::RenderTarget,
+        mesh::MeshVertexAttribute,
+        render_resource::{
+            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
+            VertexFormat,
+        },
+    },
+};
+use bevy_rapier3d::prelude::*;
 
+use self::{
+    custom_vertex_attribute::CustomMaterial,
+    portal_pair::{create_portals, PortalPair, PortalPairs, ScreenCamera},
+    texture_binding_array::BindlessMaterial,
+};
+
+mod custom_vertex_attribute;
+mod portal_cameras;
+mod portal_pair;
+mod texture_binding_array;
 pub struct TestPlugin;
 impl Plugin for TestPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Screens::default())
-            .add_startup_system(setup_scene);
+        app.insert_resource(PortalPairs {
+            portals: vec![PortalPair {
+                a_pos: vec3(-1.0, -1.0, 0.0),
+                b_pos: vec3(1.0, -1.0, 0.0),
+                a_res: [512, 1024],
+                b_res: [512, 1024],
+                a_size: vec2(1.0, 2.0),
+                b_size: vec2(1.0, 2.0),
+                a_quat: Quat::IDENTITY,
+                b_quat: Quat::IDENTITY,
+            }],
+        })
+        .add_plugin(MaterialPlugin::<BindlessMaterial>::default())
+        .add_plugin(MaterialPlugin::<CustomMaterial>::default())
+        // .add_startup_system(setup_scene)
+        .add_startup_system(create_portals)
+        .add_startup_system(spawn_stuff)
+        .add_system(control_screen_cam);
     }
 }
 
-#[derive(Resource)]
-pub struct Screens {
-    images: Vec<Handle<Image>>,
-}
-impl Default for Screens {
-    fn default() -> Self {
-        Self { images: vec![] }
-    }
-}
-
-#[derive(Component)]
-pub struct PortalPair;
-
-#[derive(Component)]
-struct Screen;
-
-#[derive(Component)]
-struct ScreenCamera;
-
-pub fn setup_scene(
+fn spawn_stuff(
     mut commands: Commands,
+    mut materials: ResMut<Assets<CustomMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
-    mut screens: ResMut<Screens>,
 ) {
-    let screen = asset_server.load("textures/screen.png");
-    screens.images.push(screen.clone());
+    // cube
+    let mut mesh = Mesh::from(shape::Cube { size: 1.0 });
+    mesh.insert_attribute(
+        MeshVertexAttribute::new("BlendColor", 988540917, VertexFormat::Float32x4),
+        // The cube mesh has 24 vertices (6 faces, 4 vertices per face), so we insert one BlendColor for each
+        vec![[1.0, 0.0, 0.0, 1.0]; 24],
+    );
 
     commands
-        .spawn(Name::new("Screen_a"))
-        .insert(Camera3dBundle {
-            camera: Camera {
-                target: RenderTarget::Image(screen.clone()),
-                ..default()
-            },
+        .spawn(Name::new("Box"))
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::cuboid(0.5, 0.5, 0.5))
+        .insert(MaterialMeshBundle {
+            mesh: meshes.add(mesh),
+            material: materials.add(CustomMaterial {
+                color: Color::WHITE,
+            }),
             ..default()
         })
-        .insert(ScreenCamera);
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 5.0, 0.0)));
+}
 
-    // commands
-    //     .spawn(Name::new("Screen"))
-    //     .insert(MaterialMeshBundle {
-    //         mesh: meshes.add(Mesh::from(shape::Quad {
-    //             // size: Vec2::new(8.0, 4.5),
-    //             size: Vec2::new(1.0, 2.0),
-    //             flip: false,
-    //         })),
-    //         material: materials.add(StandardMaterial {
-    //             base_color: Color::WHITE,
-    //             base_color_texture: Some(screen.clone()),
-    //             ..default()
-    //         }),
-    //         transform: Transform {
-    //             translation: vec3(0.0, 0.0, 0.0),
-    //             ..default()
-    //         },
-    //         ..default()
-    //     });
+fn control_screen_cam(
+    mut cams: Query<&mut Transform, With<ScreenCamera>>,
+    input: Res<Input<KeyCode>>,
+) {
+    if cams.is_empty() {
+        return;
+    }
+
+    let mut delta_z = 0.0;
+    if input.pressed(KeyCode::Up) {
+        delta_z -= 1.0;
+    }
+    if input.pressed(KeyCode::Down) {
+        delta_z += 1.0;
+    }
+
+    let mut delta_x = 0.0;
+    if input.pressed(KeyCode::Left) {
+        delta_x -= 1.0;
+    }
+    if input.pressed(KeyCode::Right) {
+        delta_x += 1.0;
+    }
+
+    for mut trans in cams.iter_mut() {
+        trans.translation += vec3(delta_x, 0.0, delta_z) * 0.2;
+    }
 }
