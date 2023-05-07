@@ -8,7 +8,7 @@ pub struct FPSCam {
 }
 impl Default for FPSCam {
     fn default() -> Self {
-        Self { sen: 0.005 }
+        Self { sen: 0.01 }
     }
 }
 

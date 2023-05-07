@@ -23,7 +23,7 @@ impl Default for Player {
             speed: 0.5,
             max_speed: 3.0,
             jump_force: 3.0,
-            sen: 0.005,
+            sen: 0.01,
         }
     }
 }

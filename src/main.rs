@@ -6,6 +6,8 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 mod fps_controller;
 use fps_controller::FPSPlugin;
+use portal::TestPlugin;
+mod portal;
 
 fn main() {
     App::new()
@@ -32,6 +34,7 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(FPSPlugin)
+        .add_plugin(TestPlugin)
         .add_startup_system(init_scene)
         .run();
 }
@@ -50,7 +53,7 @@ fn init_scene(
             mesh: meshes.add(Mesh::from(shape::Box::new(40.0, 0.2, 40.0))),
             material: materials.add(StandardMaterial {
                 base_color: Color::WHITE,
-                base_color_texture: Some(asset_server.load("checker_board.png")),
+                base_color_texture: Some(asset_server.load("textures/checker_board.png")),
                 ..default()
             }),
             ..default()
