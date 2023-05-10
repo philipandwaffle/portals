@@ -7,7 +7,8 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.10.0"
-bevy_rapier3d = { version = "0.21.0", features = [ "simd-stable", "debug-render-3d" ] }
+# bevy_rapier3d = { version = "0.21.0", features = [ "simd-stable", "debug-render-3d" ] }
+bevy_rapier3d = "0.21.0"
 
 bevy-inspector-egui = "0.18.1"
-bevy-inspector-egui-rapier = "0.9.0"
+bevy-inspector-egui-rapier = "0.9.0" 

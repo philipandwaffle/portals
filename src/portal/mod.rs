@@ -7,14 +7,15 @@ use bevy_rapier3d::prelude::*;
 
 use self::{
     custom_vertex_attribute::CustomMaterial,
-    portal_cameras::rotate_portal_cams,
-    portal_pair::{create_portals, PortalPair, PortalPairs, ScreenCamera},
+    portal_camera::{rotate_portal_cams, translate_portal_cams},
+    portal_pair::{create_portals, PortalPair, PortalPairs},
     texture_binding_array::BindlessMaterial,
 };
 
 mod custom_vertex_attribute;
-mod portal_cameras;
+mod portal_camera;
 mod portal_pair;
+mod portal_screen;
 mod texture_binding_array;
 pub struct TestPlugin;
 impl Plugin for TestPlugin {
@@ -35,9 +36,10 @@ impl Plugin for TestPlugin {
         .add_plugin(MaterialPlugin::<CustomMaterial>::default())
         // .add_startup_system(setup_scene)
         .add_startup_system(create_portals)
-        .add_startup_system(spawn_stuff)
-        .add_system(control_screen_cam)
-        .add_system(rotate_portal_cams);
+        // .add_startup_system(spawn_stuff)
+        // .add_system(control_screen_cam)
+        .add_system(rotate_portal_cams)
+        .add_system(translate_portal_cams);
     }
 }
 
@@ -68,31 +70,31 @@ fn spawn_stuff(
         .insert(TransformBundle::from(Transform::from_xyz(0.0, 5.0, 0.0)));
 }
 
-fn control_screen_cam(
-    mut cams: Query<&mut Transform, With<ScreenCamera>>,
-    input: Res<Input<KeyCode>>,
-) {
-    if cams.is_empty() {
-        return;
-    }
+// fn control_screen_cam(
+//     mut cams: Query<&mut Transform, With<PortalCamera>>,
+//     input: Res<Input<KeyCode>>,
+// ) {
+//     if cams.is_empty() {
+//         return;
+//     }
 
-    let mut delta_z = 0.0;
-    if input.pressed(KeyCode::Up) {
-        delta_z -= 1.0;
-    }
-    if input.pressed(KeyCode::Down) {
-        delta_z += 1.0;
-    }
+//     let mut delta_z = 0.0;
+//     if input.pressed(KeyCode::Up) {
+//         delta_z -= 1.0;
+//     }
+//     if input.pressed(KeyCode::Down) {
+//         delta_z += 1.0;
+//     }
 
-    let mut delta_x = 0.0;
-    if input.pressed(KeyCode::Left) {
-        delta_x -= 1.0;
-    }
-    if input.pressed(KeyCode::Right) {
-        delta_x += 1.0;
-    }
+//     let mut delta_x = 0.0;
+//     if input.pressed(KeyCode::Left) {
+//         delta_x -= 1.0;
+//     }
+//     if input.pressed(KeyCode::Right) {
+//         delta_x += 1.0;
+//     }
 
-    for mut trans in cams.iter_mut() {
-        trans.translation += vec3(delta_x, 0.0, delta_z) * 0.2;
-    }
-}
+//     for mut trans in cams.iter_mut() {
+//         trans.translation += vec3(delta_x, 0.0, delta_z) * 0.2;
+//     }
+// }

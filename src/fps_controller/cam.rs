@@ -13,20 +13,21 @@ impl Default for FPSCam {
 }
 
 pub fn rotate_player_camera(
-    mut cam: Query<(&FPSCam, &mut Transform)>,
+    mut cam: Query<(&FPSCam, &mut Transform, &GlobalTransform)>,
     cs: Res<ControlState>,
     mut gr: ResMut<GlobalResources>,
 ) {
     match cam.get_single_mut() {
-        Ok((fps_cam, mut transform)) => {
+        Ok((fps_cam, mut transform, gt)) => {
             let pitch = Quat::from_axis_angle(Vec3::X, cs.look_delta.y * -fps_cam.sen);
             transform.rotate_local(pitch);
 
             let yaw = Quat::from_axis_angle(Vec3::Y, cs.look_delta.x * -fps_cam.sen);
-            gr.y_rot *= yaw;
             transform.rotate(yaw);
 
+            gr.y_rot *= yaw;
             gr.cam_rot = transform.rotation;
+            gr.global_player_pos = gt.translation();
         }
         Err(_) => warn!("There is no player camera in the scene"),
     }

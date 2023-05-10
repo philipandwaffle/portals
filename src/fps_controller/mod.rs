@@ -15,7 +15,6 @@ pub struct Player {
     pub speed: f32,
     pub max_speed: f32,
     pub jump_force: f32,
-    pub sen: f32,
 }
 impl Default for Player {
     fn default() -> Self {
@@ -23,7 +22,6 @@ impl Default for Player {
             speed: 0.5,
             max_speed: 3.0,
             jump_force: 3.0,
-            sen: 0.001,
         }
     }
 }
@@ -31,14 +29,13 @@ impl Default for Player {
 pub struct FPSPlugin;
 impl Plugin for FPSPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(ControlPlugin);
-        app.add_startup_system(spawn_player);
-
-        // Tried to schedule system before to avoid having to do checks but didn't work
-        // app.add_system(move_player_down.after(move_player));
-        app.add_system(move_player_down);
-        app.add_system(rotate_player_camera);
-        app.add_system(move_player);
+        app.add_plugin(ControlPlugin)
+            .add_startup_system(spawn_player)
+            // Tried to schedule system before to avoid having to do checks but didn't work
+            // app.add_system(move_player_down.after(move_player));
+            .add_system(move_player_down)
+            .add_system(rotate_player_camera)
+            .add_system(move_player);
     }
 }
 

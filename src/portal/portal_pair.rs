@@ -1,5 +1,4 @@
 use bevy::{
-    math::vec3,
     prelude::*,
     render::{
         camera::RenderTarget,
@@ -9,7 +8,11 @@ use bevy::{
     },
 };
 
-use super::texture_binding_array::BindlessMaterial;
+use super::{
+    portal_camera::{PortalCamera, PortalCameraBundle},
+    portal_screen::PortalScreenBundle,
+    texture_binding_array::BindlessMaterial,
+};
 
 #[derive(Resource)]
 pub struct PortalPairs {
@@ -51,12 +54,7 @@ pub struct PortalPair {
 }
 
 #[derive(Component)]
-pub struct Portal;
-#[derive(Component)]
-pub struct Screen;
-
-#[derive(Component)]
-pub struct ScreenCamera;
+pub struct PortalScreen;
 
 pub fn create_portals(
     spawnlist: Res<PortalPairs>,
@@ -115,91 +113,78 @@ pub fn create_portals(
         let image_handle_a = images.add(a_image.clone());
         let image_handle_b = images.add(b_image.clone());
 
-        let foo = BindlessMaterial {
-            textures: vec![image_handle_a.clone()],
-        };
-        commands
-            .spawn(Name::new(format!("{}_screen_a", count)))
-            .insert(MaterialMeshBundle {
-                mesh: meshes.add(Mesh::from(shape::Quad {
+        // let foo = BindlessMaterial {
+        //     textures: vec![image_handle_a.clone()],
+        // };
+
+        let pair = commands
+            .spawn(Name::new(format!("portal_pair_{}", count)))
+            .insert(SpatialBundle::default())
+            .id();
+
+        let screen_a = commands
+            .spawn(PortalScreenBundle::new(
+                format!("{}_screen_a", count),
+                meshes.add(Mesh::from(shape::Quad {
                     size: portal_pair.a_size,
                     flip: false,
                 })),
-                // material: bindless_materials.add(foo),
-                // transform: Transform {
-                //     translation: portal.a_pos,
-                //     ..default()
-                // },
-                material: materials.add(StandardMaterial {
+                materials.add(StandardMaterial {
                     base_color: Color::WHITE,
                     base_color_texture: Some(image_handle_a.clone()),
                     ..default()
                 }),
-                transform: Transform {
-                    translation: portal_pair.a_pos,
-                    ..default()
-                },
-                ..default()
-            })
-            .with_children(|parent| {
-                parent
-                    .spawn(Name::new("Camera"))
-                    .insert(Camera3dBundle {
-                        camera: Camera {
-                            target: RenderTarget::Image(image_handle_b.clone()),
-                            ..default()
-                        },
-                        ..default()
-                    })
-                    .insert(ScreenCamera)
-                    .insert(MaterialMeshBundle {
-                        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
-                        material: materials.add(StandardMaterial {
-                            base_color: Color::RED,
-                            ..default()
-                        }),
-                        ..default()
-                    });
-            });
+                portal_pair.a_pos,
+            ))
+            .id();
 
-        commands
-            .spawn(Name::new(format!("{}_screen_b", count)))
-            .insert(MaterialMeshBundle {
-                mesh: meshes.add(Mesh::from(shape::Quad {
+        let screen_b = commands
+            .spawn(PortalScreenBundle::new(
+                format!("{}_screen_b", count),
+                meshes.add(Mesh::from(shape::Quad {
                     size: portal_pair.b_size,
                     flip: false,
                 })),
-                material: materials.add(StandardMaterial {
+                materials.add(StandardMaterial {
                     base_color: Color::WHITE,
                     base_color_texture: Some(image_handle_b.clone()),
                     ..default()
                 }),
-                transform: Transform {
-                    translation: portal_pair.b_pos,
+                portal_pair.b_pos,
+            ))
+            .id();
+
+        let cam_a = commands
+            .spawn(PortalCameraBundle {
+                name: "Camera".into(),
+                portal_cam: PortalCamera,
+                cam_bundle: Camera3dBundle {
+                    camera: Camera {
+                        target: RenderTarget::Image(image_handle_b.clone()),
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
             })
-            .with_children(|parent| {
-                parent
-                    .spawn(Name::new("Camera"))
-                    .insert(Camera3dBundle {
-                        camera: Camera {
-                            target: RenderTarget::Image(image_handle_a.clone()),
-                            ..default()
-                        },
+            .id();
+
+        let cam_b = commands
+            .spawn(PortalCameraBundle {
+                name: "Camera".into(),
+                portal_cam: PortalCamera,
+                cam_bundle: Camera3dBundle {
+                    camera: Camera {
+                        target: RenderTarget::Image(image_handle_a.clone()),
                         ..default()
-                    })
-                    .insert(ScreenCamera)
-                    .insert(MaterialMeshBundle {
-                        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
-                        material: materials.add(StandardMaterial {
-                            base_color: Color::RED,
-                            ..default()
-                        }),
-                        ..default()
-                    });
-            });
+                    },
+                    ..default()
+                },
+            })
+            .id();
+
+        commands.entity(screen_a).push_children(&[cam_a]);
+        commands.entity(screen_b).push_children(&[cam_b]);
+        commands.entity(pair).push_children(&[screen_a, screen_b]);
 
         count += 1;
     }

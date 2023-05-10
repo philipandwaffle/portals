@@ -3898,7 +3898,6 @@ dependencies = [
  "parry3d",
  "rustc-hash",
  "simba 0.8.0",
- "vec_map",
 ]
 
 [[package]]
