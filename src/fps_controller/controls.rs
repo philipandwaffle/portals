@@ -1,8 +1,4 @@
-use bevy::{
-    input::mouse::MouseMotion,
-    math::{vec2, vec3},
-    prelude::*,
-};
+use bevy::{input::mouse::MouseMotion, math::vec2, prelude::*};
 
 pub struct ControlPlugin;
 impl Plugin for ControlPlugin {

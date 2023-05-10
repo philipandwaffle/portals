@@ -36,8 +36,8 @@ impl Plugin for TestPlugin {
         // .add_startup_system(setup_scene)
         .add_startup_system(create_portals)
         .add_startup_system(spawn_stuff)
-        .add_system(control_screen_cam);
-        // .add_system(rotate_portal_cams);
+        .add_system(control_screen_cam)
+        .add_system(rotate_portal_cams);
     }
 }
 

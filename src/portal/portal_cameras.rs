@@ -8,8 +8,6 @@ pub fn rotate_portal_cams(
     gr: Res<GlobalResources>,
 ) {
     for (_, mut transform) in portal_cams.iter_mut() {
-        let foo = transform.rotation.inverse().clone();
-        transform.rotate(foo);
-        transform.rotate(gr.cam_rot);
+        transform.rotation = gr.cam_rot;
     }
 }

@@ -1,7 +1,6 @@
-use super::{controls::ControlState, Player};
-use crate::global_resources::{self, GlobalResources};
-use bevy::{math::vec2, prelude::*};
-use bevy_rapier3d::na::Quaternion;
+use super::controls::ControlState;
+use crate::global_resources::GlobalResources;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct FPSCam {
