@@ -67,10 +67,10 @@ pub fn create_portals(
     mut images: ResMut<Assets<Image>>,
 ) {
     let mut count = 0;
-    for portal in spawnlist.portals.iter() {
+    for portal_pair in spawnlist.portals.iter() {
         let a_image_size = Extent3d {
-            width: portal.a_res[0],
-            height: portal.a_res[1],
+            width: portal_pair.a_res[0],
+            height: portal_pair.a_res[1],
             ..default()
         };
         let mut a_image = Image {
@@ -91,8 +91,8 @@ pub fn create_portals(
         a_image.resize(a_image_size);
 
         let b_image_size = Extent3d {
-            width: portal.b_res[0],
-            height: portal.b_res[1],
+            width: portal_pair.b_res[0],
+            height: portal_pair.b_res[1],
             ..default()
         };
         let mut b_image = Image {
@@ -122,12 +122,21 @@ pub fn create_portals(
             .spawn(Name::new(format!("{}_screen_a", count)))
             .insert(MaterialMeshBundle {
                 mesh: meshes.add(Mesh::from(shape::Quad {
-                    size: portal.a_size,
+                    size: portal_pair.a_size,
                     flip: false,
                 })),
-                material: bindless_materials.add(foo),
+                // material: bindless_materials.add(foo),
+                // transform: Transform {
+                //     translation: portal.a_pos,
+                //     ..default()
+                // },
+                material: materials.add(StandardMaterial {
+                    base_color: Color::WHITE,
+                    base_color_texture: Some(image_handle_a.clone()),
+                    ..default()
+                }),
                 transform: Transform {
-                    translation: portal.a_pos,
+                    translation: portal_pair.a_pos,
                     ..default()
                 },
                 ..default()
@@ -142,14 +151,22 @@ pub fn create_portals(
                         },
                         ..default()
                     })
-                    .insert(ScreenCamera);
+                    .insert(ScreenCamera)
+                    .insert(MaterialMeshBundle {
+                        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
+                        material: materials.add(StandardMaterial {
+                            base_color: Color::RED,
+                            ..default()
+                        }),
+                        ..default()
+                    });
             });
 
         commands
             .spawn(Name::new(format!("{}_screen_b", count)))
             .insert(MaterialMeshBundle {
                 mesh: meshes.add(Mesh::from(shape::Quad {
-                    size: portal.b_size,
+                    size: portal_pair.b_size,
                     flip: false,
                 })),
                 material: materials.add(StandardMaterial {
@@ -158,7 +175,7 @@ pub fn create_portals(
                     ..default()
                 }),
                 transform: Transform {
-                    translation: portal.b_pos,
+                    translation: portal_pair.b_pos,
                     ..default()
                 },
                 ..default()
@@ -173,7 +190,15 @@ pub fn create_portals(
                         },
                         ..default()
                     })
-                    .insert(ScreenCamera);
+                    .insert(ScreenCamera)
+                    .insert(MaterialMeshBundle {
+                        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
+                        material: materials.add(StandardMaterial {
+                            base_color: Color::RED,
+                            ..default()
+                        }),
+                        ..default()
+                    });
             });
 
         count += 1;

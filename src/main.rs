@@ -4,13 +4,17 @@ use bevy::{
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
-mod fps_controller;
 use fps_controller::FPSPlugin;
+use global_resources::GlobalResources;
 use portal::TestPlugin;
+
+mod fps_controller;
+mod global_resources;
 mod portal;
 
 fn main() {
     App::new()
+        .insert_resource(GlobalResources::default())
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {

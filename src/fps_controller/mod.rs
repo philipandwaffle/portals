@@ -2,7 +2,7 @@ use bevy::{math::vec3, prelude::*};
 use bevy_rapier3d::prelude::*;
 
 use self::{
-    cam::{pitch_camera, yaw_player, FPSCam},
+    cam::{rotate_player_camera, FPSCam},
     controls::ControlPlugin,
     movement::{move_player, move_player_down},
 };
@@ -23,7 +23,7 @@ impl Default for Player {
             speed: 0.5,
             max_speed: 3.0,
             jump_force: 3.0,
-            sen: 0.01,
+            sen: 0.001,
         }
     }
 }
@@ -37,8 +37,7 @@ impl Plugin for FPSPlugin {
         // Tried to schedule system before to avoid having to do checks but didn't work
         // app.add_system(move_player_down.after(move_player));
         app.add_system(move_player_down);
-        app.add_system(pitch_camera);
-        app.add_system(yaw_player);
+        app.add_system(rotate_player_camera);
         app.add_system(move_player);
     }
 }

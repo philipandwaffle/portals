@@ -1,19 +1,13 @@
 use bevy::{
     math::{vec2, vec3},
     prelude::*,
-    render::{
-        camera::RenderTarget,
-        mesh::MeshVertexAttribute,
-        render_resource::{
-            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-            VertexFormat,
-        },
-    },
+    render::{mesh::MeshVertexAttribute, render_resource::VertexFormat},
 };
 use bevy_rapier3d::prelude::*;
 
 use self::{
     custom_vertex_attribute::CustomMaterial,
+    portal_cameras::rotate_portal_cams,
     portal_pair::{create_portals, PortalPair, PortalPairs, ScreenCamera},
     texture_binding_array::BindlessMaterial,
 };
@@ -43,6 +37,7 @@ impl Plugin for TestPlugin {
         .add_startup_system(create_portals)
         .add_startup_system(spawn_stuff)
         .add_system(control_screen_cam);
+        // .add_system(rotate_portal_cams);
     }
 }
 

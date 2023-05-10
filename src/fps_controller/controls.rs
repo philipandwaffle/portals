@@ -36,14 +36,14 @@ impl Default for Bindings {
 #[derive(Resource)]
 pub struct ControlState {
     pub move_dir: Vec2,
-    pub look_dir: Vec2,
+    pub look_delta: Vec2,
     pub jump: bool,
 }
 impl Default for ControlState {
     fn default() -> Self {
         Self {
             move_dir: vec2(0.0, 0.0),
-            look_dir: vec2(0.0, 0.0),
+            look_delta: vec2(0.0, 0.0),
             jump: false,
         }
     }
@@ -78,7 +78,9 @@ fn update_control_state(
     }
 
     // Update mouse
+    let mut look_delta = vec2(0.0, 0.0);
     for ev in motion_evr.iter() {
-        cs.look_dir += ev.delta;
+        look_delta += ev.delta;
     }
+    control_state.look_delta = look_delta;
 }

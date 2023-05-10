@@ -35,9 +35,9 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     // let foo = mesh_position_local_to_clip(mesh.model, vec4<f32>(vertex.position, 1.0));
     let foo = mesh_position_local_to_world(mesh.model, vec4<f32>(vertex.position, 1.0));
     // let foo = mesh_position_world_to_clip(vec4<f32>(vertex.position, 1.0));
-    out.clip_position = foo;
+    out.clip_position = vec4<f32>(vertex.position, 0.5);
     // out.blend_color = vertex.blend_color;
-    out.blend_color = foo;
+    out.blend_color = vec4<f32>(1.0,0.5,0.5,1.0);
     return out;
 }
 

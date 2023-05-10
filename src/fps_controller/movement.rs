@@ -1,6 +1,8 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_rapier3d::prelude::*;
 
+use crate::global_resources::GlobalResources;
+
 use super::{controls::ControlState, Player};
 
 pub fn move_player_down(mut controllers: Query<&mut KinematicCharacterController, With<Player>>) {
@@ -17,6 +19,7 @@ pub fn move_player(
         &KinematicCharacterControllerOutput,
     )>,
     mut cs: ResMut<ControlState>,
+    gr: Res<GlobalResources>,
 ) {
     match player.get_single_mut() {
         Ok((player, mut vel, trans, output)) => {
@@ -27,7 +30,7 @@ pub fn move_player(
 
             let delta_v = trans.rotation.mul_vec3(cs.move_dir.extend(0.0).xzy()) * player.speed;
             if vel.linvel.length_squared() < player.max_speed * player.max_speed {
-                vel.linvel += delta_v;
+                vel.linvel += gr.y_rot.mul_vec3(delta_v);
             }
             cs.move_dir = Vec2::new(0.0, 0.0);
         }

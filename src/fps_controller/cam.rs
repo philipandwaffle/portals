@@ -1,6 +1,7 @@
-use bevy::prelude::*;
-
 use super::{controls::ControlState, Player};
+use crate::global_resources::{self, GlobalResources};
+use bevy::{math::vec2, prelude::*};
+use bevy_rapier3d::na::Quaternion;
 
 #[derive(Component)]
 pub struct FPSCam {
@@ -8,28 +9,26 @@ pub struct FPSCam {
 }
 impl Default for FPSCam {
     fn default() -> Self {
-        Self { sen: 0.01 }
+        Self { sen: 0.001 }
     }
 }
 
-pub fn pitch_camera(mut cams: Query<(&FPSCam, &mut Transform)>, mut cs: ResMut<ControlState>) {
-    for (fps_cam, mut transform) in cams.iter_mut() {
-        let z_rot = Quat::IDENTITY.slerp(
-            Quat::from_axis_angle(Vec3::X, cs.look_dir.y * -fps_cam.sen),
-            0.1,
-        );
-        transform.rotate(z_rot);
-    }
-    cs.look_dir.y = 0.0;
-}
+pub fn rotate_player_camera(
+    mut cam: Query<(&FPSCam, &mut Transform)>,
+    cs: Res<ControlState>,
+    mut gr: ResMut<GlobalResources>,
+) {
+    match cam.get_single_mut() {
+        Ok((fps_cam, mut transform)) => {
+            let pitch = Quat::from_axis_angle(Vec3::X, cs.look_delta.y * -fps_cam.sen);
+            transform.rotate_local(pitch);
 
-pub fn yaw_player(mut player: Query<(&Player, &mut Transform)>, mut cs: ResMut<ControlState>) {
-    for (player, mut transform) in player.iter_mut() {
-        let y_rot = Quat::IDENTITY.slerp(
-            Quat::from_axis_angle(Vec3::Y, cs.look_dir.x * -player.sen),
-            0.1,
-        );
-        transform.rotate(y_rot);
+            let yaw = Quat::from_axis_angle(Vec3::Y, cs.look_delta.x * -fps_cam.sen);
+            gr.y_rot *= yaw;
+            transform.rotate(yaw);
+
+            gr.cam_rot = transform.rotation;
+        }
+        Err(_) => warn!("There is no player camera in the scene"),
     }
-    cs.look_dir.x = 0.0;
 }
