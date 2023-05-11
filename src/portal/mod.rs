@@ -8,7 +8,7 @@ use bevy_rapier3d::prelude::*;
 use self::{
     custom_vertex_attribute::CustomMaterial,
     portal_camera::{rotate_portal_cams, translate_portal_cams},
-    portal_pair::{create_portals, PortalPair, PortalPairs},
+    portal_pair::{create_portals, PortalPairSpawn, PortalPairSpawns},
     texture_binding_array::BindlessMaterial,
 };
 
@@ -20,8 +20,8 @@ mod texture_binding_array;
 pub struct TestPlugin;
 impl Plugin for TestPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(PortalPairs {
-            portals: vec![PortalPair {
+        app.insert_resource(PortalPairSpawns {
+            portals: vec![PortalPairSpawn {
                 a_pos: vec3(-1.0, -1.0, 0.0),
                 b_pos: vec3(1.0, -1.0, 0.0),
                 a_res: [512, 1024],
@@ -36,7 +36,7 @@ impl Plugin for TestPlugin {
         .add_plugin(MaterialPlugin::<CustomMaterial>::default())
         // .add_startup_system(setup_scene)
         .add_startup_system(create_portals)
-        // .add_startup_system(spawn_stuff)
+        .add_startup_system(spawn_stuff)
         // .add_system(control_screen_cam)
         .add_system(rotate_portal_cams)
         .add_system(translate_portal_cams);

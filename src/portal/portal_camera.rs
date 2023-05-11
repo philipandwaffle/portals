@@ -1,7 +1,12 @@
-use crate::global_resources::GlobalResources;
-use bevy::{prelude::*, render::camera::RenderTarget};
+use std::vec;
 
-use super::portal_pair::PortalScreen;
+use super::{portal_pair::PortalPair, portal_screen::PortalScreen};
+use crate::global_resources::GlobalResources;
+use bevy::{
+    ecs::query::QueryEntityError, prelude::*, reflect::erased_serde::__private::serde::ser::Error,
+    render::camera::RenderTarget,
+};
+use bevy_inspector_egui::egui::vec2;
 
 #[derive(Bundle)]
 pub struct PortalCameraBundle {
@@ -10,7 +15,7 @@ pub struct PortalCameraBundle {
     pub cam_bundle: Camera3dBundle,
 }
 impl PortalCameraBundle {
-    fn new(name: String, target_img: Handle<Image>) -> Self {
+    pub fn new(name: String, target_img: Handle<Image>) -> Self {
         Self {
             name: Name::new(name),
             portal_cam: PortalCamera,
@@ -38,21 +43,51 @@ pub fn rotate_portal_cams(
 }
 
 pub fn translate_portal_cams(
-    screens: Query<&GlobalTransform, (With<PortalScreen>, Without<PortalCamera>)>,
-    mut cams: Query<(&Parent, &mut Transform), (With<PortalCamera>, Without<PortalScreen>)>,
+    pairs: Query<(&Name, &Children), With<PortalPair>>,
+    screens: Query<(&GlobalTransform, &Children), With<PortalScreen>>,
+    mut cams: Query<&mut Transform, With<PortalCamera>>,
     gr: Res<GlobalResources>,
 ) {
-    for (cam_parent, mut cam_transform) in cams.iter_mut() {
-        // `parent` contains the Entity ID we can use
-        // to query components from the parent:
-        match screens.get(cam_parent.get()) {
-            Ok(screen_gt) => {
-                cam_transform.translation = screen_gt.translation() - gr.global_player_pos;
-            }
-            Err(err) => warn!("One of the portal screens doesn't have a camera, {:?}", err),
-        };
-        // if let Ok(screen_gt) = screens.get(cam_parent.get()) {
-        //     cam_transform.translation = screen_gt.translation() - gr.global_player_pos;
-        // }
+    let player_pos = gr.global_player_pos;
+    for (name, pair_children) in pairs.iter() {
+        let mut screen_pos = vec![];
+        let mut cam_entities = vec![];
+
+        for &screen in pair_children.iter() {
+            let (screen_gt, screen_children) = screens.get(screen).unwrap();
+
+            screen_pos.push(screen_gt.translation().clone());
+            cam_entities.push(screen_children[0]);
+        }
+
+        let i = screen_pos[0];
+        let j = screen_pos[1];
+
+        cams.get_mut(cam_entities[0]).unwrap().translation = gr.global_player_pos;
+        cams.get_mut(cam_entities[0]).unwrap().translation = i + j - gr.global_player_pos;
+
+        // println!("{},{}", screen_pos.len(), cam_entities.len());
     }
+}
+
+fn from_pair_get_screen_cam(
+    entity: Entity,
+    screen_children: &Query<&Children, With<PortalScreen>>,
+    cam_children: &Query<&Children, With<PortalCamera>>,
+) -> Result<([Entity; 2], [Entity; 2]), QueryEntityError> {
+    let mut screens = vec![];
+    let mut cams = vec![];
+
+    for screen in screen_children.iter_descendants(entity) {
+        screens.push(screen);
+        for cam in cam_children.iter_descendants(screen) {
+            cams.push(cam);
+        }
+    }
+    println!("{},{}", screens.len(), cams.len());
+    if screens.len() != 2 || cams.len() != 2 {
+        return Err(QueryEntityError::QueryDoesNotMatch(entity));
+    }
+
+    return Ok(([screens[0], screens[1]], [cams[0], cams[1]]));
 }

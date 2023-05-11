@@ -15,10 +15,10 @@ use super::{
 };
 
 #[derive(Resource)]
-pub struct PortalPairs {
-    pub portals: Vec<PortalPair>,
+pub struct PortalPairSpawns {
+    pub portals: Vec<PortalPairSpawn>,
 }
-impl PortalPairs {
+impl PortalPairSpawns {
     fn add_portal(
         &mut self,
         a_pos: Vec3,
@@ -30,7 +30,7 @@ impl PortalPairs {
         a_quat: Quat,
         b_quat: Quat,
     ) {
-        self.portals.push(PortalPair {
+        self.portals.push(PortalPairSpawn {
             a_pos,
             b_pos,
             a_res,
@@ -42,7 +42,7 @@ impl PortalPairs {
         });
     }
 }
-pub struct PortalPair {
+pub struct PortalPairSpawn {
     pub a_pos: Vec3,
     pub b_pos: Vec3,
     pub a_res: [u32; 2],
@@ -54,10 +54,10 @@ pub struct PortalPair {
 }
 
 #[derive(Component)]
-pub struct PortalScreen;
+pub struct PortalPair;
 
 pub fn create_portals(
-    spawnlist: Res<PortalPairs>,
+    spawnlist: Res<PortalPairSpawns>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -119,6 +119,7 @@ pub fn create_portals(
 
         let pair = commands
             .spawn(Name::new(format!("portal_pair_{}", count)))
+            .insert(PortalPair)
             .insert(SpatialBundle::default())
             .id();
 
@@ -140,7 +141,7 @@ pub fn create_portals(
 
         let screen_b = commands
             .spawn(PortalScreenBundle::new(
-                format!("{}_screen_b", count),
+                "screen_b".into(),
                 meshes.add(Mesh::from(shape::Quad {
                     size: portal_pair.b_size,
                     flip: false,
@@ -155,36 +156,38 @@ pub fn create_portals(
             .id();
 
         let cam_a = commands
-            .spawn(PortalCameraBundle {
-                name: "Camera".into(),
-                portal_cam: PortalCamera,
-                cam_bundle: Camera3dBundle {
-                    camera: Camera {
-                        target: RenderTarget::Image(image_handle_b.clone()),
-                        ..default()
-                    },
+            .spawn(PortalCameraBundle::new(
+                "cam_a".into(),
+                image_handle_b.clone(),
+            ))
+            .insert(MaterialMeshBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::RED,
                     ..default()
-                },
+                }),
+                ..default()
             })
             .id();
 
         let cam_b = commands
-            .spawn(PortalCameraBundle {
-                name: "Camera".into(),
-                portal_cam: PortalCamera,
-                cam_bundle: Camera3dBundle {
-                    camera: Camera {
-                        target: RenderTarget::Image(image_handle_a.clone()),
-                        ..default()
-                    },
+            .spawn(PortalCameraBundle::new(
+                "cam_b".into(),
+                image_handle_a.clone(),
+            ))
+            .insert(MaterialMeshBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::RED,
                     ..default()
-                },
+                }),
+                ..default()
             })
             .id();
 
+        commands.entity(pair).push_children(&[screen_a, screen_b]);
         commands.entity(screen_a).push_children(&[cam_a]);
         commands.entity(screen_b).push_children(&[cam_b]);
-        commands.entity(pair).push_children(&[screen_a, screen_b]);
 
         count += 1;
     }

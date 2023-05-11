@@ -29,27 +29,3 @@ impl PortalScreenBundle {
 
 #[derive(Component)]
 pub struct PortalScreen;
-
-// .spawn(Name::new(format!("{}_screen_a", count)))
-// .insert(PortalScreen)
-// .insert(MaterialMeshBundle {
-//     mesh: meshes.add(Mesh::from(shape::Quad {
-//         size: portal_pair.a_size,
-//         flip: false,
-//     })),
-//     // material: bindless_materials.add(foo),
-//     // transform: Transform {
-//     //     translation: portal.a_pos,
-//     //     ..default()
-//     // },
-//     material: materials.add(StandardMaterial {
-//         base_color: Color::WHITE,
-//         base_color_texture: Some(image_handle_a.clone()),
-//         ..default()
-//     }),
-//     ..default()
-// })
-// .insert(SpatialBundle {
-//     transform: Transform::from_translation(portal_pair.a_pos),
-//     ..Default::default()
-// })
