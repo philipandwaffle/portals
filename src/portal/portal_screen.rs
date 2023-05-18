@@ -13,6 +13,7 @@ impl PortalScreenBundle {
         mesh_handle: Handle<Mesh>,
         material_handle: Handle<StandardMaterial>,
         translation: Vec3,
+        rotation: Quat,
     ) -> Self {
         return Self {
             name: Name::new(name),
@@ -20,7 +21,11 @@ impl PortalScreenBundle {
             material_mesh_bundle: MaterialMeshBundle {
                 mesh: mesh_handle,
                 material: material_handle,
-                transform: Transform::from_translation(translation),
+                transform: Transform {
+                    translation,
+                    rotation,
+                    ..default()
+                },
                 ..default()
             },
         };

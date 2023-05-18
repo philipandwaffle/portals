@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{
     math::{vec2, vec3},
     prelude::*,
@@ -8,7 +10,7 @@ use bevy_rapier3d::prelude::*;
 use self::{
     custom_vertex_attribute::CustomMaterial,
     portal_camera::{rotate_portal_cams, translate_portal_cams},
-    portal_pair::{create_portals, PortalPairSpawn, PortalPairSpawns},
+    portal_pair::{create_portals, PortalPairSpawns},
     texture_binding_array::BindlessMaterial,
 };
 
@@ -17,29 +19,41 @@ mod portal_camera;
 mod portal_pair;
 mod portal_screen;
 mod texture_binding_array;
-pub struct TestPlugin;
-impl Plugin for TestPlugin {
+pub struct PortalTestingPlugin;
+impl Plugin for PortalTestingPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(PortalPairSpawns {
-            portals: vec![PortalPairSpawn {
-                a_pos: vec3(-1.0, -1.0, 0.0),
-                b_pos: vec3(1.0, -1.0, 0.0),
-                a_res: [512, 1024],
-                b_res: [512, 1024],
-                a_size: vec2(1.0, 2.0),
-                b_size: vec2(1.0, 2.0),
-                a_quat: Quat::IDENTITY,
-                b_quat: Quat::IDENTITY,
-            }],
-        })
-        .add_plugin(MaterialPlugin::<BindlessMaterial>::default())
-        .add_plugin(MaterialPlugin::<CustomMaterial>::default())
-        // .add_startup_system(setup_scene)
-        .add_startup_system(create_portals)
-        .add_startup_system(spawn_stuff)
-        // .add_system(control_screen_cam)
-        .add_system(rotate_portal_cams)
-        .add_system(translate_portal_cams);
+        let mut portal_spawns = PortalPairSpawns::new();
+        // portal_spawns.add_portal(
+        //     vec3(0.0, 1.0, -0.5),
+        //     vec3(0.0, 1.0, 0.5),
+        //     [1024, 1024],
+        //     [1024, 1024],
+        //     vec2(2.0, 2.0),
+        //     vec2(2.0, 2.0),
+        //     Quat::from_rotation_y(PI),
+        //     Quat::IDENTITY,
+        // );
+
+        portal_spawns.add_portal(
+            vec3(0.0, 1.0, 10.0),
+            vec3(0.0, 1.0, -10.0),
+            [1024, 1024],
+            [1024, 1024],
+            vec2(2.0, 2.0),
+            vec2(2.0, 2.0),
+            Quat::from_rotation_y(PI),
+            Quat::IDENTITY,
+        );
+
+        app.insert_resource(portal_spawns)
+            .add_plugin(MaterialPlugin::<BindlessMaterial>::default())
+            .add_plugin(MaterialPlugin::<CustomMaterial>::default())
+            // .add_startup_system(setup_scene)
+            .add_startup_system(create_portals)
+            // .add_startup_system(spawn_stuff)
+            // .add_system(control_screen_cam)
+            .add_system(translate_portal_cams)
+            .add_system(rotate_portal_cams);
     }
 }
 

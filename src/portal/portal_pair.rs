@@ -1,17 +1,14 @@
 use bevy::{
     prelude::*,
-    render::{
-        camera::RenderTarget,
-        render_resource::{
-            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        },
+    render::render_resource::{
+        Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
     },
 };
 
 use super::{
-    portal_camera::{PortalCamera, PortalCameraBundle},
+    portal_camera::PortalCameraBundle,
     portal_screen::PortalScreenBundle,
-    texture_binding_array::BindlessMaterial,
+    // texture_binding_array::BindlessMaterial,
 };
 
 #[derive(Resource)]
@@ -19,7 +16,10 @@ pub struct PortalPairSpawns {
     pub portals: Vec<PortalPairSpawn>,
 }
 impl PortalPairSpawns {
-    fn add_portal(
+    pub fn new() -> Self {
+        return Self { portals: vec![] };
+    }
+    pub fn add_portal(
         &mut self,
         a_pos: Vec3,
         b_pos: Vec3,
@@ -61,9 +61,10 @@ pub fn create_portals(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut bindless_materials: ResMut<Assets<BindlessMaterial>>,
+    // mut bindless_materials: ResMut<Assets<BindlessMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
+    info!("Creating portals");
     let mut count = 0;
     for portal_pair in spawnlist.portals.iter() {
         let a_image_size = Extent3d {
@@ -136,6 +137,7 @@ pub fn create_portals(
                     ..default()
                 }),
                 portal_pair.a_pos,
+                portal_pair.a_quat,
             ))
             .id();
 
@@ -152,6 +154,7 @@ pub fn create_portals(
                     ..default()
                 }),
                 portal_pair.b_pos,
+                portal_pair.b_quat,
             ))
             .id();
 
@@ -191,4 +194,5 @@ pub fn create_portals(
 
         count += 1;
     }
+    info!("Finished spawning portals");
 }

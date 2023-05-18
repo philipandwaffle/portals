@@ -6,11 +6,13 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use fps_controller::FPSPlugin;
 use global_resources::GlobalResources;
-use portal::TestPlugin;
+use portal::PortalTestingPlugin;
+use test_scenes::{facing_room, mirrored_room};
 
 mod fps_controller;
 mod global_resources;
 mod portal;
+mod test_scenes;
 
 fn main() {
     App::new()
@@ -34,12 +36,13 @@ fn main() {
                 // don't use linear sampling as image textures will be blurry
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugin(RapierDebugRenderPlugin::default())
+        // .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(FPSPlugin)
-        .add_plugin(TestPlugin)
-        .add_startup_system(init_scene)
+        .add_plugin(PortalTestingPlugin)
+        // .add_startup_system(mirrored_room)
+        .add_startup_system(facing_room)
         .run();
 }
 
