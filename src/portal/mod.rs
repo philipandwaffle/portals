@@ -50,7 +50,7 @@ impl Plugin for PortalTestingPlugin {
             .add_plugin(MaterialPlugin::<CustomMaterial>::default())
             // .add_startup_system(setup_scene)
             .add_startup_system(create_portals)
-            // .add_startup_system(spawn_stuff)
+            .add_startup_system(spawn_stuff)
             // .add_system(control_screen_cam)
             .add_system(translate_portal_cams)
             .add_system(rotate_portal_cams);
@@ -62,8 +62,9 @@ fn spawn_stuff(
     mut materials: ResMut<Assets<CustomMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
+    let size = 1.0;
     // cube
-    let mut mesh = Mesh::from(shape::Cube { size: 1.0 });
+    let mut mesh = Mesh::from(shape::Cube { size });
     mesh.insert_attribute(
         MeshVertexAttribute::new("BlendColor", 988540917, VertexFormat::Float32x4),
         // The cube mesh has 24 vertices (6 faces, 4 vertices per face), so we insert one BlendColor for each
@@ -73,7 +74,7 @@ fn spawn_stuff(
     commands
         .spawn(Name::new("Box"))
         .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(0.5, 0.5, 0.5))
+        .insert(Collider::cuboid(size / 2.0, size / 2.0, size / 2.0))
         .insert(MaterialMeshBundle {
             mesh: meshes.add(mesh),
             material: materials.add(CustomMaterial {
@@ -81,8 +82,16 @@ fn spawn_stuff(
             }),
             ..default()
         })
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 5.0, 0.0)));
+        .insert(TransformBundle::from(Transform::from_xyz(10.0, 5.0, 0.0)));
 }
+
+// fn shader_testing(
+//     mut commands: Commands,
+//     mut meshes: ResMut<Assets<Mesh>>,
+//     mut bindless_materials: ResMut<Assets<BindlessMaterial>>,
+// ) {
+//     commands.spawn(bundle)
+// }
 
 // fn control_screen_cam(
 //     mut cams: Query<&mut Transform, With<PortalCamera>>,

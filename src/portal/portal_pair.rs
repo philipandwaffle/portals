@@ -58,10 +58,10 @@ pub struct PortalPair;
 
 pub fn create_portals(
     spawnlist: Res<PortalPairSpawns>,
+   
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    // mut bindless_materials: ResMut<Assets<BindlessMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     info!("Creating portals");
