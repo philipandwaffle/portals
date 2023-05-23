@@ -1,5 +1,6 @@
 #import bevy_pbr::mesh_view_bindings
 #import bevy_pbr::mesh_bindings
+#import bevy_pbr::utils
 
 struct CustomMaterial {
     color: vec4<f32>,
@@ -27,7 +28,15 @@ struct VertexOutput {
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
-    let foo = view.view_proj * mesh.model * vec4<f32>(vertex.position, 1.0);
+
+    var x = vertex.position.x;
+    var y = vertex.position.y;
+    var z = vertex.position.z;
+    // x += rand(globals.time) / 200.0;
+    // y += rand(globals.time) / 200.0;
+    // z += rand(globals.time) / 200.0;
+
+    let foo = view.view_proj * mesh.model * vec4<f32>(x, y, z, 1.0);
     // out.clip_position = foo;
     // out.blend_color = vertex.blend_color;
     // out.blend_color = foo;
@@ -38,27 +47,32 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     return out;
 }
 
-// fn mesh_position_local_to_clip(model: mat4x4<f32>, vertex_position: vec4<f32>) -> vec4<f32> {
-//     let world_position = mesh_position_local_to_world(model, vertex_position);
-//     return mesh_position_world_to_clip(world_position);
-// }
-// fn mesh_position_local_to_world(model: mat4x4<f32>, vertex_position: vec4<f32>) -> vec4<f32> {
-//     return model * vertex_position;
-// }
-// fn mesh_position_world_to_clip(world_position: vec4<f32>) -> vec4<f32> {
-//     return view.view_proj * world_position;
-// }
-
 struct FragmentInput {
     @location(0) blend_color: vec4<f32>,
 };
 
 @fragment
-fn fragment(input: FragmentInput) -> @location(0) vec4<f32> {
-    return input.blend_color;
+fn fragment(@builtin(position) position: vec4<f32>, input: FragmentInput) -> @location(0) vec4<f32> {
+    let uv = coords_to_viewport_uv(position.xy, view.viewport);
+    return vec4<f32>(uv.xy, 0.0, 0.0);
     // return material.color * input.blend_color;
 }
+// @fragment
+// fn fragment(
+//     @builtin(position) position: vec4<f32>,
+//     #import bevy_pbr::mesh_vertex_output
+// ) -> @location(0) vec4<f32> {
+//     let uv = coords_to_viewport_uv(position.xy, view.viewport);
+//     let color = textureSample(texture, texture_sampler, uv);
+//     return color;
+// }
 
+fn rand(n: f32) -> f32 { return fract(sin(n) * 43758.5453123); }
+fn noise(p: f32) -> f32 {
+    let fl = floor(p);
+    let fc = fract(p);
+    return mix(rand(fl), rand(fl + 1.), fc);
+}
 
 // #import bevy_pbr::mesh_view_bindings
 // #import bevy_pbr::mesh_bindings
